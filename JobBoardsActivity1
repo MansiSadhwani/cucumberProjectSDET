@@ -1,0 +1,98 @@
+Feature: 
+
+@JobBoard1
+Feature: Create User
+  I want to create New User
+
+  @tag1
+  Scenario: Add New User
+    Given User is logged in to Alchemy Jobs
+    When User clicks on Add user and fills details
+    Then User gets created
+    And Close the browser and generate HTML report
+    
+    ---------------------------------------------------------------
+    Runner file:
+    
+    package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@JobBoard1",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+public class ProjectRunner {
+
+}
+----------------------------------------------------------------------
+CreateNewUser.java
+
+package stepDefinitions;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class CreateNewUser {
+	
+WebDriver driver;
+	
+	@Given("^User is logged in to Alchemy Jobs$")
+	public void login()
+	{
+	driver = new FirefoxDriver();
+	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+	driver.get("https://alchemy.hguy.co/jobs/wp-login.php?redirect_to=https%3A%2F%2Falchemy.hguy.co%2Fjobs%2Fwp-admin%2F&reauth=1");
+	driver.findElement(By.cssSelector("#user_login")).sendKeys("root");
+	driver.findElement(By.cssSelector("#user_pass")).sendKeys("pa$$w0rd");
+	driver.findElement(By.cssSelector("#wp-submit")).click();
+	}
+	
+	@When("^User clicks on Add user and fills details$")
+	public void AddUser() throws InterruptedException
+	{
+	driver.findElement(By.xpath("//div[contains(text(),'Users')]")).click();
+	driver.findElement(By.xpath("//li[@id='menu-users']//ul[@class='wp-submenu wp-submenu-wrap']//li//a[contains(text(),'Add New')]")).click();
+	driver.findElement(By.xpath("//input[@id='user_login']")).sendKeys("Mansi");
+	driver.findElement(By.xpath("//input[@id='email']")).sendKeys("Mansi.sadhwani85@gmail.com");
+	//driver.findElement(By.xpath("//input[@id='first_name']")).sendKeys("Mansi");
+	//driver.findElement(By.xpath("//input[@id='last_name']")).sendKeys("S");
+	//driver.findElement(By.xpath("//input[@id='url']")).sendKeys("www.masiboutique.com");
+	//driver.findElement(By.xpath("//button[@class='button wp-generate-pw hide-if-no-js']")).click();
+	Thread.sleep(5000);
+	//driver.findElement(By.cssSelector("#pass1")).sendKeys("abcdefghijklmnopqrstuvw");
+ 
+	driver.findElement(By.xpath("//input[@id='createusersub']")).click();
+	
+	}
+	@Then("^User gets created$")
+	public void verifyUser()
+	{
+	driver.findElement(By.xpath("//a[@class='wp-first-item current']")).click();
+	driver.findElement(By.xpath("//input[@id='user-search-input']")).sendKeys("Mansi");
+	driver.findElement(By.xpath("//input[@id='search-submit']")).click();
+	driver.findElement(By.linkText("Mansi")).click();
+	}
+	@And("Close the browser and generate HTML report")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+
+}
+
