@@ -1,0 +1,95 @@
+Feature file:
+
+@SearchJobs
+Feature: Apply for Jobs
+  I want to apply for jobs
+
+  @tag1
+  Scenario: Search and Apply for jobs
+    Given User is on Jobs page of Alchemy Jobs
+    When User searches for Full time jobs
+    Then Finds job listing
+    And Applies for the Job
+    And Closes the browser
+
+--------------------------------------------------------------------
+Runner file:
+
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@SearchJobs",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+public class ProjectRunner {
+
+}
+--------------------------------------------------------------------------
+SearchJobs.java:
+
+package stepDefinitions;
+
+
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class SearchJobs 
+{
+	WebDriver driver;
+	@Given("^User is on Jobs page of Alchemy Jobs$")
+	public void GoToJobs()
+	{
+		driver = new FirefoxDriver();
+		driver.get("https://alchemy.hguy.co/jobs/");
+		driver.findElement(By.xpath("//li[@id='menu-item-24']//a[contains(text(),'Jobs')]")).click();
+		
+		
+	}
+	@When("^User searches for Full time jobs$")
+	public void searchJob()
+	{
+		driver.findElement(By.xpath("//input[@id='search_keywords']")).sendKeys("Testing");
+		driver.findElement(By.xpath("//input[@id='job_type_freelance']")).click();
+		driver.findElement(By.xpath("//input[@id='job_type_internship']")).click();
+		driver.findElement(By.xpath("//input[@id='job_type_part-time']")).click();
+		driver.findElement(By.xpath("//input[@id='job_type_temporary']")).click();
+		driver.findElement(By.xpath("//div[@class='search_submit']//input")).click();
+	}
+	@Then("^Finds job listing$")
+	public void findJob()
+	{
+		List<WebElement> JobList = driver.findElements(By.className("job_listings"));
+		System.out.println(JobList);
+	}
+	@Then("^Applies for the Job$")
+	public void applyJob()
+	{
+		//driver.findElement(By.xpath("//h3[contains(text(),'Automation Tester 01')]")).click();
+		driver.findElement(By.xpath("//li[@class='post-1930 job_listing type-job_listing status-publish hentry job-type-full-time']//h3[contains(text(),'Selenium/BDD4')]")).click();
+		driver.findElement(By.xpath("//input[@class='application_button button']")).click();
+	}
+	@And("^Closes the browser$")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+	
+}
