@@ -1,0 +1,91 @@
+Feature file:
+
+@PostJob
+Feature: Post a JOb
+  I want to post a job on the portal
+
+  @tag1
+  Scenario Outline: Title of your scenario
+    Given User is on Post a Job page of Alchemy Jobs
+    When User "<Jobname>" and "<Description>" and Submits
+     Then Confirm Job Listing
+    And Close browser and Generate HTML Report
+
+    Examples:
+    | Jobname | Description|
+    | Oct161  | Testing    |
+   	| Oct162  | Testing    |
+    | Oct163  | Testing    |
+    
+    -------------------------------------------------------
+    Runner file:
+    package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@PostJob",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+public class ProjectRunner {
+
+}
+--------------------------------------------------------------
+package stepDefinitions;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+
+public class PostJobs {
+	WebDriver driver;
+	@Given("^User is on Post a Job page of Alchemy Jobs$")
+	public void GoToPostJob()
+	{
+		driver = new FirefoxDriver();
+		driver.get("https://alchemy.hguy.co/jobs/");
+		driver.findElement(By.xpath("//a[contains(text(),'Post a Job')]")).click();
+	}
+	
+	@When("^User \"(.*)\" and \"(.*)\" and Submits$")
+	public void SubmitJob(String JobName, String Description)
+	{
+		driver.findElement(By.xpath("//a[@class='button']")).click();
+		driver.findElement(By.cssSelector("#user_login")).sendKeys("root");
+		driver.findElement(By.cssSelector("#user_pass")).sendKeys("pa$$w0rd");
+		driver.findElement(By.cssSelector("#wp-submit")).click();
+		driver.findElement(By.xpath("//input[@id='job_title']")).sendKeys(JobName);
+		driver.switchTo().frame("job_description_ifr");
+		driver.findElement(By.xpath("//body[@id='tinymce']")).sendKeys(Description);
+		driver.switchTo().defaultContent();
+		driver.findElement(By.xpath("//input[@name='submit_job']")).click();
+		driver.findElement(By.xpath("//input[@id='job_preview_submit_button']")).click();
+	}
+	
+	@Then("^Confirm Job Listing$")
+	public void ConfirmJobListing()
+	{
+		driver.findElement(By.xpath("//a[contains(text(),'click here')]")).click();
+		String Jobname = driver.findElement(By.xpath("//h1[@class='entry-title']")).getText();
+		if(Jobname == "October16")
+		System.out.println(Jobname+" was created successfully");
+		
+	}
+	@And("^Close browser and Generate HTML Report$")
+	public void close()
+	{
+		driver.close();
+	}
+}
