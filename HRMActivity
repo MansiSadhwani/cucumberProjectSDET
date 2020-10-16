@@ -1,0 +1,90 @@
+Feature file: 
+
+
+@JobVacancy
+Feature: Add Job Vacancy
+ 
+  @tag1
+  Scenario: Search and Apply for jobs
+    Given User is on Recruitment page of OrangeHRM
+    When User adds Job Vacancy
+    Then verifies that vacancy is created 
+    And Closes the browser
+----------------------------------------------------------------
+Runner file:
+
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@JobVacancy",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class HRMProjectRunner {
+
+}
+------------------------------------------------------------------
+AddJobVacany.java:
+
+package stepDefinitions;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class AddJobVacancy {
+	WebDriver driver;
+	@Given("^User is on Recruitment page of OrangeHRM$")
+	public void GoToRecruitment()
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("http://alchemy.hguy.co:8080/orangehrm/symfony/web/index.php/auth/login");
+		driver.findElement(By.xpath("//input[@id='txtUsername']")).sendKeys("orange");
+		driver.findElement(By.xpath("//input[@id='txtPassword']")).sendKeys("orangepassword123");
+		driver.findElement(By.xpath("//input[@id='btnLogin']")).click();
+		driver.findElement(By.xpath("//b[contains(text(),'Recruitment')]")).click();
+	}
+	
+	@When("^User adds Job Vacancy$")
+	public void addJobVacancy()
+	{
+		driver.findElement(By.xpath("//a[@id='menu_recruitment_viewJobVacancy']")).click();
+		driver.findElement(By.xpath("//input[@id='btnAdd']")).click();
+		driver.findElement(By.xpath("//select[@id='addJobVacancy_jobTitle']")).sendKeys("Automation Test Engineer");
+		driver.findElement(By.xpath("//input[@id='addJobVacancy_name']")).sendKeys("October16");
+		driver.findElement(By.xpath("//input[@id='addJobVacancy_hiringManager']")).sendKeys("Johns Kati");
+		driver.findElement(By.xpath("//input[@id='btnSave']")).click();
+	}
+	@Then("^verifies that vacancy is created$")
+	public void VacancyCreated()
+	{
+		driver.findElement(By.xpath("//a[@id='menu_recruitment_viewJobVacancy']")).click();
+		driver.findElement(By.xpath("//select[@id='vacancySearch_jobTitle']")).sendKeys("Automation Test Engineer");
+		driver.findElement(By.xpath("//select[@id='vacancySearch_jobVacancy']")).sendKeys("October16");
+		driver.findElement(By.xpath("//select[@id='vacancySearch_hiringManager']")).sendKeys("Johns Kati");
+		driver.findElement(By.xpath("//input[@id='btnSrch']")).click();
+		if(driver.findElement(By.xpath("//a[contains(text(),'October16')]")).isDisplayed());
+		System.out.println("Job vacancy created successfully");
+	}
+	@And("^Closes the browser$")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+}
