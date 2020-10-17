@@ -1,0 +1,103 @@
+Feature file:
+
+
+@AddEmployees
+Feature: Add Employees
+  I want to add multiple employees
+
+  @tag2
+  Scenario Outline: Add Employees
+    Given User is on PIM page
+    When User Adds Employees with "<firstname>", "<Lastname>" and "<Username>"
+    Then Verifies Employee is created with "<firstname>", "<Lastname>"
+    And Closes browser
+
+    Examples: 
+      | firstname  | Lastname | Username   |
+      | October    | 171      | October171 |
+      | October    | 172      | October172 |
+      | October    | 173      | October173 |
+      
+   
+-----------------------------------------------------------------------
+Runner file:
+
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@AddEmployees",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class HRMProjectRunner {
+
+}
+-------------------------------------------------------------------------
+AddEmployees.java:
+
+package stepDefinitions;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class AddEmployees {
+	WebDriver driver;
+
+	
+	@Given("^User is on PIM page$")
+	public void GoToPIM() throws InterruptedException
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("http://alchemy.hguy.co:8080/orangehrm/symfony/web/index.php/auth/login");
+		driver.findElement(By.xpath("//input[@id='txtUsername']")).sendKeys("orange");
+		driver.findElement(By.xpath("//input[@id='txtPassword']")).sendKeys("orangepassword123");
+		driver.findElement(By.xpath("//input[@id='btnLogin']")).click();
+		Thread.sleep(1000);
+		driver.findElement(By.xpath("//b[contains(text(),'PIM')]")).click();
+	}
+	
+	@When("^User Adds Employees with \"(.*)\", \"(.*)\" and \"(.*)\"")
+	public void addsEmployees(String firstname, String Lastname, String Username)
+	{
+		driver.findElement(By.xpath("//input[@id='btnAdd']")).click();
+		driver.findElement(By.xpath("//input[@id='firstName']")).sendKeys(firstname);
+		driver.findElement(By.xpath("//input[@id='lastName']")).sendKeys(Lastname);
+		driver.findElement(By.xpath("//input[@id='chkLogin']")).click();
+		driver.findElement(By.xpath("//input[@id='user_name']")).sendKeys(Username);
+		driver.findElement(By.xpath("//input[@id='btnSave']")).click();
+		
+	}
+	
+	@Then("^Verifies Employee is created with \"(.*)\", \"(.*)\"$")
+	public void verifyEmployees(String firstname, String Lastname)
+	{
+		driver.findElement(By.xpath("//a[@id='menu_pim_viewEmployeeList']")).click();
+		driver.findElement(By.xpath("//input[@id='empsearch_employee_name_empName']")).sendKeys(firstname+" "+Lastname);
+		driver.findElement(By.xpath("//input[@id='searchBtn']")).click();
+		driver.findElement(By.linkText(firstname));
+		driver.findElement(By.linkText(Lastname));
+		System.out.println(firstname+" "+Lastname+"Employee created successfully");
+	}
+	
+	@Then("^Closes browser$")
+	public void CloseBlowser()
+	{
+		driver.close();
+	}
+}
