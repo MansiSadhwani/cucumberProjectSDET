@@ -1,0 +1,97 @@
+Feature file:
+
+@AddCandidate
+Feature: Add candidate
+
+  @tag1
+  Scenario: Add Candidate
+    Given User is on Recruitment page
+    When User adds Candidate and uploads resume
+    Then verifies entry of candidate 
+    And Close the browser
+
+ 
+ -----------------------------------------------------
+ Runner file:
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@AddCandidate",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class HRMProjectRunner {
+
+}
+--------------------------------------------------------
+AddCandidate.java:
+
+package stepDefinitions;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class AddCandidate {
+	WebDriver driver;
+	
+	@Given("^User is on Recruitment page$")
+	public void GoToRecruitment() throws InterruptedException
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("http://alchemy.hguy.co:8080/orangehrm/symfony/web/index.php/auth/login");
+		driver.findElement(By.xpath("//input[@id='txtUsername']")).sendKeys("orange");
+		driver.findElement(By.xpath("//input[@id='txtPassword']")).sendKeys("orangepassword123");
+		driver.findElement(By.xpath("//input[@id='btnLogin']")).click();
+		Thread.sleep(1000);
+		driver.findElement(By.xpath("//b[contains(text(),'Recruitment')]")).click();
+	}
+	
+	@When("^User adds Candidate and uploads resume$")
+	public void addCandidate()
+	{
+		driver.findElement(By.xpath("//input[@id='btnAdd']")).click();
+		driver.findElement(By.xpath("//input[@id='addCandidate_firstName']")).sendKeys("October");
+		driver.findElement(By.xpath("//input[@id='addCandidate_lastName']")).sendKeys("Sixteenone");
+		driver.findElement(By.xpath("//input[@id='addCandidate_email']")).sendKeys("October16@gmail.com");
+		driver.findElement(By.xpath("//input[@id='addCandidate_resume']")).sendKeys("C:\\SDET\\SDET.txt");
+		driver.findElement(By.xpath("//input[@id='btnSave']")).click();
+		
+	}
+	
+	@Then("^verifies entry of candidate$")
+	public void verifyCandidate()
+	{
+		driver.findElement(By.xpath("//b[contains(text(),'Recruitment')]")).click();
+		driver.findElement(By.xpath("//input[@id='candidateSearch_keywords']")).sendKeys("October Sixteenone");
+		driver.findElement(By.xpath("//input[@id='btnSrch']")).click();
+		String CandidateName = driver.findElement(By.xpath("//tr[1]//td[3]//a[1]")).getText();
+		if(CandidateName.contains("October Sixteenone"));
+		System.out.println("Candidates creation verified");
+	}
+	
+	@And("^Close the browser$")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+
+}
+
+
