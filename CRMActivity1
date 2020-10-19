@@ -1,0 +1,87 @@
+Feature file:
+
+@CountingDashlets
+Feature: Counting Daslets
+  I want to count Dashlets
+  
+  @tag1
+  Scenario: Counting Dashlets of SuiteCRM
+    Given User is logged in to SuiteCRM
+    Then User counts Dashlets and Prints it
+    And Close the browser
+
+-------------------------------------------------------------------------
+Runner file:
+
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinition"},
+    tags = "@CountingDashlets",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class CRMProjectRunner {
+
+}
+----------------------------------------------------------------------
+CountingDashlet.java:
+
+
+package stepDefinition;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class CountingDashlet {
+	WebDriver driver;
+	
+	
+	@Given("^User is logged in to SuiteCRM$")
+	public void LogintoCRM()
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("https://alchemy.hguy.co/crm/index.php?action=Login&module=Users");
+		driver.findElement(By.xpath("//input[@id='user_name']")).sendKeys("admin");
+		driver.findElement(By.xpath("//input[@id='username_password']")).sendKeys("pa$$w0rd");
+		driver.findElement(By.xpath("//input[@id='bigbutton']")).click();
+		
+	}
+	@Then("^User counts Dashlets and Prints it$")
+	public void printDaslets()
+	{
+		List<WebElement> Dashlets = driver.findElements(By.className("dashlet-title"));
+		
+		System.out.println("Dashlets count is "+ Dashlets.size());
+		for(int i=0;i<Dashlets.size();i++)
+		{
+			System.out.println(Dashlets.get(i).getText());
+		}
+	
+		
+	}
+	@And("^Close the browser$")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+}
