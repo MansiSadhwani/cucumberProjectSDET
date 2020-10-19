@@ -1,0 +1,106 @@
+Feature File:
+
+@CreateLeads
+Feature: Create Leads using parameterization
+  I want to create leads
+
+  @tag2
+  Scenario Outline: Create Leads
+    Given User is logged in to Suite CRM
+    When User Creates Lead with "<Lastname>"
+    Then Views Leads page to see result with "<Lastname>"
+    And Closes the browser
+
+    Examples: 
+      | Lastname   |
+      | October191 |
+      | October192 |
+      | October193 |
+      
+  -------------------------------------------------------------------
+  Runner file:
+  
+  package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinition"},
+    tags = "@CreateLeads",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class CRMProjectRunner {
+
+}
+---------------------------------------------------------------------------
+CreateLeads.java:
+
+package stepDefinition;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class CreateLeads {
+	WebDriver driver;
+	
+	
+	@Given("^User is logged in to Suite CRM$")
+	public void Login()
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("https://alchemy.hguy.co/crm/index.php?action=Login&module=Users");
+		driver.findElement(By.xpath("//input[@id='user_name']")).sendKeys("admin");
+		driver.findElement(By.xpath("//input[@id='username_password']")).sendKeys("pa$$w0rd");
+		driver.findElement(By.xpath("//input[@id='bigbutton']")).click();
+		
+	}
+	@When("^User Creates Lead with \"(.*)\"$")
+	public void NavigatetoCreateLead(String lastname) throws InterruptedException
+	{
+		//Navigate to Sales --> Lead
+		  driver.findElement(By.cssSelector("a[id=\'grouptab_0\']")).click();
+	     WebElement SalesDropDown = driver.findElement(By.cssSelector("a[id=\'grouptab_0\']"));  
+		    Actions action = new Actions (driver);
+		    action.moveToElement(SalesDropDown).click().build().perform();
+		    WebElement Lead = driver.findElement(By.cssSelector("a[id=\'moduleTab_9_Leads\']")); 
+		    action.moveToElement(Lead).click().build().perform();
+		    
+		//driver.findElement(By.xpath("//a[@id='grouptab_0']")).click();
+		//driver.findElement(By.cssSelector("#moduleTab_9_Leads")).click();
+		Thread.sleep(1000);
+		//driver.findElement(By.xpath("//a[@href='?action=ajaxui#ajaxUILoc=index.php%3Fmodule%3DLeads%26action%3DEditView%26return_module%3DLeads%26return_action%3DDetailView']//span[@aria-hidden='true'][contains(text(),'Create Lead')]")).click();
+		    driver.findElement(By.xpath("//li[1]//a[1]//div[2]")).click();
+		    Thread.sleep(1000);
+		    driver.findElement(By.xpath("//input[@id='last_name']")).sendKeys(lastname);
+		driver.findElement(By.xpath("//td[@class='buttons']//div[@class='buttons']//input[@id='SAVE']")).click();
+	}
+	@Then("^Views Leads page to see result with \"(.*)\"$")
+	public void viewResult(String lastname)
+	{
+		driver.findElement(By.xpath("//div[contains(text(),'View Leads')]")).click();
+		driver.findElement(By.partialLinkText(lastname)).isDisplayed();
+		System.out.println(lastname+" lead created successfully");
+	}
+	@And("^Closes the browser$")
+	public void close()
+	{
+		driver.close();
+	}
+}
