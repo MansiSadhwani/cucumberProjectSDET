@@ -1,0 +1,112 @@
+Feature File:
+
+@CreateMultipleVacancies
+Feature: Create Vacancies
+  I want to create multiple vacancies
+
+
+  @tag2
+  Scenario Outline: Create Vacancies
+    Given User on Recruitment page of OrangeHRM
+    When User adds Multiple Job Vacancy with "<JobTitle>", "<vacancyName>" and "<hiringManager>"
+    Then verifies multiple vacancies created with "<JobTitle>", "<vacancyName>" and "<hiringManager>"
+    And Close browser
+
+    Examples: 
+      | JobTitle  							 | vacancyName | hiringManager  |
+      | Automation Test Engineer | October181  | Johns Kati     |
+      | Automation Test Engineer | October182  | Johns Kati     |
+      | Automation Test Engineer | October183  | Johns Kati     |
+  
+
+----------------------------------------------------------------------------------------------------
+Runner file:
+
+package cucumberTest;
+
+import org.junit.runner.RunWith;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+
+@RunWith(Cucumber.class)
+@CucumberOptions(
+    features = "Features",
+    glue = {"stepDefinitions"},
+    tags = "@CreateMultipleVacancies",
+     plugin = {"html: test-reports"},
+    monochrome = true
+)
+
+public class HRMProjectRunner {
+
+}
+
+------------------------------------------------------------------------------------------
+AddVacancies.java:
+
+package stepDefinitions;
+
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.Select;
+
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
+
+public class AddVacancies {
+	WebDriver driver;
+	@Given("^User on Recruitment page of OrangeHRM$")
+	public void GoToRecruitment() throws InterruptedException
+	{
+		driver = new FirefoxDriver();
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		driver.get("http://alchemy.hguy.co:8080/orangehrm/symfony/web/index.php/auth/login");
+		driver.findElement(By.xpath("//input[@id='txtUsername']")).sendKeys("orange");
+		driver.findElement(By.xpath("//input[@id='txtPassword']")).sendKeys("orangepassword123");
+		driver.findElement(By.xpath("//input[@id='btnLogin']")).click();
+		Thread.sleep(1000);
+		driver.findElement(By.xpath("//b[contains(text(),'Recruitment')]")).click();
+	}
+	
+	@When("^User adds Multiple Job Vacancy with \"(.*)\", \"(.*)\" and \"(.*)\"$")
+	public void addJobVacancy(String JobTitle, String vacancyName, String hiringManager)
+	{
+		driver.findElement(By.xpath("//a[@id='menu_recruitment_viewJobVacancy']")).click();
+		driver.findElement(By.xpath("//input[@id='btnAdd']")).click();
+		driver.findElement(By.xpath("//select[@id='addJobVacancy_jobTitle']")).sendKeys(JobTitle);
+		driver.findElement(By.xpath("//input[@id='addJobVacancy_name']")).sendKeys(vacancyName);
+		driver.findElement(By.xpath("//input[@id='addJobVacancy_hiringManager']")).sendKeys(hiringManager);
+		driver.findElement(By.xpath("//input[@id='btnSave']")).click();
+	}
+	@Then("^verifies multiple vacancies created with \"(.*)\", \"(.*)\" and \"(.*)\"$")
+	public void VacancyCreated(String JobTitle1, String vacancyName1, String hiringManager1) throws InterruptedException
+	{
+		driver.findElement(By.xpath("//a[@id='menu_recruitment_viewJobVacancy']")).click();
+		Thread.sleep(1000);
+		Select s = new Select(driver.findElement(By.xpath("//select[@id='vacancySearch_jobTitle']")));
+		s.selectByVisibleText(JobTitle1);
+		Thread.sleep(1000);
+		Select s1 = new Select(driver.findElement(By.xpath("//select[@id='vacancySearch_jobVacancy']")));
+		s1.selectByVisibleText(vacancyName1);
+		Thread.sleep(1000);
+		Select s2 = new Select(driver.findElement(By.xpath("//select[@id='vacancySearch_hiringManager']")));
+		s2.selectByVisibleText(hiringManager1);
+	//	driver.findElement(By.xpath("//select[@id='vacancySearch_jobTitle']")).sendKeys(JobTitle1);
+	//	driver.findElement(By.xpath("//select[@id='vacancySearch_jobVacancy']")).sendKeys(vacancyName1);
+	//	driver.findElement(By.xpath("//select[@id='vacancySearch_hiringManager']")).sendKeys(hiringManager1);
+		driver.findElement(By.xpath("//input[@id='btnSrch']")).click();
+		if(driver.findElement(By.linkText(vacancyName1)).isDisplayed());
+		System.out.println(vacancyName1+ " Job vacancy created successfully");
+	}
+	@And("^Close browser$")
+	public void closeBrowser()
+	{
+		driver.close();
+	}
+
+}
